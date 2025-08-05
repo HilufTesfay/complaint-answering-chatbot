@@ -23,3 +23,5 @@ Debt or credit management                                                       
 Other financial service                                                            1058
 Virtual currency                                                                     18
 Name: count, dtype: int64
+2025-08-05 14:46:16,990 - INFO - src.eda.eda - Starting RAG data preparation
+2025-08-05 14:47:20,096 - INFO - src.eda.eda - Data loaded successfully. Shape: (9609797, 4)
