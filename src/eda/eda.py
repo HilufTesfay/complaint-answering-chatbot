@@ -8,10 +8,11 @@ from pathlib import Path
 from tqdm import tqdm
 import gc
 import numpy as np
+from typing import Dict
 
 
 # Initialize logging
-def setup_logging(log_dir: str = "../logs") -> logging.Logger:
+def setup_logging(log_dir: str = "../../logs") -> logging.Logger:
     """Configure structured logging for EDA tasks"""
     log_dir = Path(log_dir)
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -30,31 +31,34 @@ logger = setup_logging()
 # Pre-compile regex patterns for performance
 TEXT_CLEANING_PATTERNS = {
     "boilerplate": [
-        r'i\s+(?:am|have)\s+writing\s+to\s+(?:file|submit)\s+a\s+complaint',
-        r'dear\s+(?:sir|madam|team)',
-        r'this\s+is\s+(?:regarding|about)',
-        r'(?:please|kindly)\s+(?:help|assist)'
+        r"i\s+(?:am|have)\s+writing\s+to\s+(?:file|submit)\s+a\s+complaint",
+        r"dear\s+(?:sir|madam|team)",
+        r"this\s+is\s+(?:regarding|about)",
+        r"(?:please|kindly)\s+(?:help|assist)",
     ],
-    "special_chars": re.compile(r'[^\w\s]'),
-    "extra_spaces": re.compile(r'\s+')
+    "special_chars": re.compile(r"[^\w\s]"),
+    "extra_spaces": re.compile(r"\s+"),
 }
+
 
 def clean_text(text: str) -> str:
     if pd.isna(text) or not isinstance(text, str):
         return ""
-    
+
     text = str(text).lower().strip()
-    
+
     # Apply each boilerplate pattern separately
-    for pattern in TEXT_CLEANING_PATTERNS['boilerplate']:
-        text = re.sub(pattern, '', text, flags=re.IGNORECASE)
-    
-    text = TEXT_CLEANING_PATTERNS['special_chars'].sub(' ', text)
-    text = TEXT_CLEANING_PATTERNS['extra_spaces'].sub(' ', text)
+    for pattern in TEXT_CLEANING_PATTERNS["boilerplate"]:
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+
+    text = TEXT_CLEANING_PATTERNS["special_chars"].sub(" ", text)
+    text = TEXT_CLEANING_PATTERNS["extra_spaces"].sub(" ", text)
     return text.strip()
+
 
 def load_and_validate_data(filepath: str) -> pd.DataFrame:
     """Robust data loader with validation and memory optimization"""
+
     try:
         filepath = Path(filepath)
         if not filepath.exists():
@@ -67,11 +71,10 @@ def load_and_validate_data(filepath: str) -> pd.DataFrame:
             "State": "category",
         }
 
-        
         df = pd.read_csv(
             filepath,
             dtype=dtypes,
-            usecols=list(dtypes.keys()),  
+            usecols=list(dtypes.keys()),
         )
 
         # Validation
@@ -91,45 +94,98 @@ def load_and_validate_data(filepath: str) -> pd.DataFrame:
         raise
 
 
-def perform_initial_eda(df: pd.DataFrame) -> None:
-    """Comprehensive EDA with enhanced visualizations"""
+def perform_initial_eda(df: pd.DataFrame, chunk_size: int = 1000000) -> None:
+    """Comprehensive EDA with chunking for large datasets"""
+    log_dir = Path("../logs")
     try:
-        # 1. Product Distribution
+        # Initialize aggregators for chunked processing
+        product_counts: Dict[str, int] = {}
+        missing_counts: Dict[str, int] = {}
+        total_rows = len(df)
+        narrative_lengths = []
+
+        # Validate required columns
+        required_columns = ["Product", "Consumer complaint narrative"]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            logger.error(f"Missing columns in DataFrame: {missing_columns}")
+            raise ValueError(f"Required columns missing: {missing_columns}")
+
+        # Process DataFrame in chunks
+        for start_idx in range(0, total_rows, chunk_size):
+            chunk = df[start_idx : start_idx + chunk_size]
+            logger.info(
+                f"Processing chunk {start_idx // chunk_size + 1} ({len(chunk)} rows)"
+            )
+
+            # 1. Aggregate product counts
+            chunk_product_counts = chunk["Product"].value_counts()
+            for product, count in chunk_product_counts.items():
+                product_counts[product] = product_counts.get(product, 0) + count
+
+            # 2. Compute narrative lengths for chunk
+            chunk["narrative_length"] = (
+                chunk["Consumer complaint narrative"].str.split().str.len()
+            )
+            narrative_lengths.append(chunk[["Product", "narrative_length"]].dropna())
+
+            # 3. Aggregate missing data counts
+            chunk_missing = chunk.isnull().sum()
+            for col, count in chunk_missing.items():
+                missing_counts[col] = missing_counts.get(col, 0) + count
+
+        # Convert aggregated results to DataFrames
+        product_dist = pd.Series(product_counts, name="Product").sort_values(
+            ascending=False
+        )
+        product_dist = product_dist / product_dist.sum() * 100
+        narrative_lengths_df = pd.concat(narrative_lengths, axis=0)
+        missing_stats = pd.Series(missing_counts, name="Missing") / total_rows * 100
+
+        # 1. Product Distribution Plot
         plt.figure(figsize=(12, 8))
-        product_dist = df["Product"].value_counts(normalize=True) * 100
         ax = product_dist.plot(kind="barh")
         plt.title("Complaint Distribution by Product", pad=20)
         plt.xlabel("Percentage (%)")
-
-        # Annotate bars with percentages
         for i, v in enumerate(product_dist):
             ax.text(v + 0.5, i, f"{v:.1f}%", va="center")
         plt.tight_layout()
-        plt.savefig("../logs/product_distribution.png", dpi=300, bbox_inches="tight")
+        output_path = log_dir / "product_distribution.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
+        logger.info(f"Saved product distribution plot to {output_path}")
 
-        # 2. Narrative Length Analysis
-        df["narrative_length"] = (
-            df["Consumer complaint narrative"].str.split().str.len()
-        )
-
+        # 2. Narrative Length Boxplot
         plt.figure(figsize=(12, 6))
         sns.boxplot(
             x="Product",
             y="narrative_length",
-            data=df,
-            showfliers=False,  # Exclude outliers for better visualization
+            data=narrative_lengths_df,
+            showfliers=False,
         )
         plt.title("Complaint Length Distribution by Product", pad=15)
         plt.xticks(rotation=45, ha="right")
         plt.ylabel("Word Count")
         plt.tight_layout()
-        plt.savefig("../logs/narrative_length_distribution.png", dpi=300)
+        output_path = log_dir / "narrative_length_distribution.png"
+        plt.savefig(output_path, dpi=300)
         plt.close()
+        logger.info(f"Saved narrative length distribution plot to {output_path}")
 
         # 3. Missing Data Analysis
-        missing_stats = df.isnull().mean() * 100
         logger.info(f"Missing data percentages:\n{missing_stats.to_string()}")
+
+        # Optional: Visualize missing data
+        plt.figure(figsize=(10, 6))
+        missing_stats.plot(kind="bar")
+        plt.title("Percentage of Missing Values by Column")
+        plt.ylabel("Percentage (%)")
+        plt.xticks(rotation=45, ha="right")
+        plt.tight_layout()
+        output_path = log_dir / "missing_data.png"
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        logger.info(f"Saved missing data plot to {output_path}")
 
     except Exception as e:
         logger.error(f"EDA failed: {str(e)}", exc_info=True)
