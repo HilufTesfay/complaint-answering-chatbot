@@ -27,7 +27,7 @@ def write_conversation_history(history: str):
 
 def get_prompt() -> str:
     try:
-     with open(root_dir/"SystemPrompt.txt", "r") as file:
+     with open(root_dir/"system_prompt.txt", "r") as file:
         system_prompt = file.read()
      return system_prompt
     except FileNotFoundError:

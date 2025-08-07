@@ -1,0 +1,25 @@
+2025-08-07 15:38:56,187 - __main__ - INFO - Starting complaint Chatbot
+2025-08-07 15:38:56,375 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7861/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-08-07 15:38:56,413 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7861/ "HTTP/1.1 200 OK"
+2025-08-07 15:38:57,137 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-08-07 15:39:38,086 - src.utils.helper - INFO - Conversation history updated successfully.
+2025-08-07 15:39:39,866 - src.vector_db.chrom - INFO - Query: 'What is the most common product?' returned 5 results
+2025-08-07 15:39:39,867 - src.rag - INFO - Retrieved 5 documents for the question: What is the most common product?
+2025-08-07 15:39:39,867 - src.rag - INFO - Context for the question: with either product. I tried the eye cream and I did n't like the feel of it so did not continue to use it and did not have any intent of ordering anymore.
+the product. I didn't even know they were still charging me for the product. I had already erased my credit card information and canceled the product.
+The items they say I purchased include a riding lawn mower, XXXX XXXX XXXXXXXX bags, XXXX fl XXXX Splash-Less Regular Concentrated Disinfecting Liquid Bleach, Soap Scum Remover, Wifi Pellet Gri...
+2025-08-07 15:39:39,867 - src.rag - INFO - Generating answer for question: What is the most common product?
+2025-08-07 15:39:41,192 - src.utils.helper - INFO - Conversation history updated successfully.
+2025-08-07 15:42:10,439 - src.utils.helper - INFO - Conversation history updated successfully.
+2025-08-07 15:42:10,471 - src.vector_db.chrom - INFO - Query: 'tell me the mist common complient regarding to crediet?' returned 5 results
+2025-08-07 15:42:10,472 - src.rag - INFO - Retrieved 5 documents for the question: tell me the mist common complient regarding to crediet?
+2025-08-07 15:42:10,472 - src.rag - INFO - Context for the question: My wife and I got sick during our fly from XXXX XXXX to XXXX XXXX, XXXX.
+We are in changing of the guard mode and Im being used to evaluate nurses in a practice of medicine. Being ill Im my growing up taught me what to look for and what to know what a healer whos a pastimes practitioner of a doctrine of care thats not perfect but uses his hands to listen. To challenge his beliefs in finding the root causes of the XXXX and addressing the chief complaint but in XXXX everyone is lying and so provin...
+2025-08-07 15:42:10,472 - src.rag - INFO - Generating answer for question: tell me the mist common complient regarding to crediet?
+2025-08-07 15:42:11,021 - src.utils.helper - INFO - Conversation history updated successfully.
+2025-08-07 15:43:04,457 - src.utils.helper - INFO - Conversation history updated successfully.
+2025-08-07 15:43:04,492 - src.vector_db.chrom - INFO - Query: 'What are the most common complaints about credit cards?' returned 5 results
+2025-08-07 15:43:04,493 - src.rag - INFO - Retrieved 5 documents for the question: What are the most common complaints about credit cards?
+2025-08-07 15:43:04,493 - src.rag - INFO - Context for the question: bill and social security card for example. I feel I was n't treated fairly here at all! Most people who apply for this card only receives XXXX credit inquiry not XXXX inquiries. I have filed multiple complaints and warn others to stay away from this bank! They are suppose to be helping people improve their quality of life not looking for stupid reasons to decline credit applicants. The sad thing about the situation is that I carry a few of their other credit cards such as Walmart, XXXX & XXXX, A...
+2025-08-07 15:43:04,494 - src.rag - INFO - Generating answer for question: What are the most common complaints about credit cards?
+2025-08-07 15:43:05,289 - src.utils.helper - INFO - Conversation history updated successfully.
