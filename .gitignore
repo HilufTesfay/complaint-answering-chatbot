@@ -3,4 +3,4 @@ data/
 .env
 venv
 __pycache__/
-vector_store/
+vector_store/vector_store/chromadb/
