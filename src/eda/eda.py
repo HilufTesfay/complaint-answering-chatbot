@@ -7,26 +7,13 @@ import logging
 from pathlib import Path
 from tqdm import tqdm
 import gc
-import numpy as np
 from typing import Dict
+from src.utils.path import get_project_root
+# Initialize logger
+logger = logging.getLogger(__name__)
 
-
-# Initialize logging
-def setup_logging(log_dir: str = "../../logs") -> logging.Logger:
-    """Configure structured logging for EDA tasks"""
-    log_dir = Path(log_dir)
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / "eda.log"
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
-    )
-    return logging.getLogger(__name__)
-
-
-logger = setup_logging()
+# Set up the root directory for the project
+root_dir = get_project_root()
 
 # Pre-compile regex patterns for performance
 TEXT_CLEANING_PATTERNS = {
@@ -51,7 +38,8 @@ def clean_text(text: str) -> str:
     for pattern in TEXT_CLEANING_PATTERNS["boilerplate"]:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE)
 
-    text = TEXT_CLEANING_PATTERNS["special_chars"].sub(" ", text)
+    text = TEXT_CLEANING_PATTERNS["s" \
+    "pecial_chars"].sub(" ", text)
     text = TEXT_CLEANING_PATTERNS["extra_spaces"].sub(" ", text)
     return text.strip()
 
@@ -96,7 +84,6 @@ def load_and_validate_data(filepath: str) -> pd.DataFrame:
 
 def perform_initial_eda(df: pd.DataFrame, chunk_size: int = 1000000) -> None:
     """Comprehensive EDA with chunking for large datasets"""
-    log_dir = Path("../logs")
     try:
         # Initialize aggregators for chunked processing
         product_counts: Dict[str, int] = {}
@@ -150,7 +137,7 @@ def perform_initial_eda(df: pd.DataFrame, chunk_size: int = 1000000) -> None:
         for i, v in enumerate(product_dist):
             ax.text(v + 0.5, i, f"{v:.1f}%", va="center")
         plt.tight_layout()
-        output_path = log_dir / "product_distribution.png"
+        output_path = root_dir / "output" / "product_distribution.png"
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
         logger.info(f"Saved product distribution plot to {output_path}")
@@ -167,7 +154,7 @@ def perform_initial_eda(df: pd.DataFrame, chunk_size: int = 1000000) -> None:
         plt.xticks(rotation=45, ha="right")
         plt.ylabel("Word Count")
         plt.tight_layout()
-        output_path = log_dir / "narrative_length_distribution.png"
+        output_path = root_dir / "output" / "narrative_length_distribution.png"
         plt.savefig(output_path, dpi=300)
         plt.close()
         logger.info(f"Saved narrative length distribution plot to {output_path}")
@@ -182,7 +169,7 @@ def perform_initial_eda(df: pd.DataFrame, chunk_size: int = 1000000) -> None:
         plt.ylabel("Percentage (%)")
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
-        output_path = log_dir / "missing_data.png"
+        output_path = root_dir / "output" / "missing_data.png"
         plt.savefig(output_path, dpi=300)
         plt.close()
         logger.info(f"Saved missing data plot to {output_path}")

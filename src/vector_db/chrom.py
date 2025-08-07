@@ -6,22 +6,21 @@ import logging
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from src.utils.path import get_project_root
 
 # Set up the root directory for the project
-root_dir = Path(__file__).resolve().parent.parent
-# Configure logging
-log_dir = root_dir / "logs"
-log_dir.mkdir(parents=True, exist_ok=True)
-logging.basicConfig(
-    filename=log_dir / "chroma_db.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+root_dir = get_project_root()
+
+# Set up logging
 logger = logging.getLogger(__name__)
 
+persist_dir = root_dir / "vector_store" / "chromadb"
+if not persist_dir.exists():
+    persist_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Created directory for ChromaDB persistence: {persist_dir}")
 
 class ChromaVectorStore:
-    def __init__(self, persist_dir: str = "../../vector_store/chromadb"):
+    def __init__(self, persist_dir: str = persist_dir):
         self.persist_dir = str(Path(persist_dir).resolve())
         self.client = chromadb.PersistentClient(path=self.persist_dir)
         self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
