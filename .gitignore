@@ -4,3 +4,4 @@ data/
 venv
 __pycache__/
 vector_store/vector_store/chromadb/
+vector_store/chromadb/
